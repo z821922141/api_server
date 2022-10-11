@@ -1,5 +1,5 @@
-import { RouterConfig, RunOptions, RequestMethod } from "./types.ts";
-import { ConnInfo, serve } from "./import.ts";
+import { RequestMethod, RouterConfig, RunOptions } from "./types.ts";
+import { bold, ConnInfo, green, serve } from "./import.ts";
 import { Context } from "./context.ts";
 /**
  * 启动服务
@@ -11,10 +11,13 @@ export async function run(
   options: RunOptions = {},
 ) {
   options.port ??= 10000;
+  options.hostname ??= "localhost";
   options.staticDir ??= "/statics";
   options.routePrefixPath ??= "";
-  Context.routerInit(routerConfig, options)
+  options.onListen ??= function ({ port, hostname }) {
+    const url = `http://${hostname}:${port}`;
+    console.log(`服务启动成功：${green(bold(url))}`);
+  };
+  Context.routerInit(routerConfig, options);
   await serve(Context.handler, options);
 }
-
-

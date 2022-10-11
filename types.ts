@@ -23,24 +23,24 @@ export interface RouterConfig {
  */
 export interface Handler {
   /* GET请求 */
-  GET?: (ctx: Context) => Response
+  GET?: (ctx: Context) => Response;
   /* POST请求 */
-  POST?: (ctx: Context) => Response
+  POST?: (ctx: Context) => Response;
   /* PUT请求 */
-  PUT?: (ctx: Context) => Response
+  PUT?: (ctx: Context) => Response;
   /* DELETE请求 */
-  DELETE?: (ctx: Context) => Response
+  DELETE?: (ctx: Context) => Response;
   /* HEAD请求 */
-  HEAD?: (ctx: Context) => Response
+  HEAD?: (ctx: Context) => Response;
   /* PATCH请求 */
-  PATCH?: (ctx: Context) => Response
+  PATCH?: (ctx: Context) => Response;
   /* OPTIONS请求 */
-  OPTIONS?: (ctx: Context) => Response
+  OPTIONS?: (ctx: Context) => Response;
   /* MIDDLEWARE中间件 */
-  MIDDLEWARE?: Array<(ctx: Context) => Response>
+  MIDDLEWARE?: Array<(ctx: Context) => Response>;
 }
 /**
- * 请求方式 
+ * 请求方式
  */
 export enum RequestMethod {
   /* GET请求 */
@@ -59,4 +59,16 @@ export enum RequestMethod {
   OPTIONS = "OPTIONS",
   /* MIDDLEWARE中间件 */
   MIDDLEWARE = "MIDDLEWARE",
+}
+
+/**
+ * 相应json
+ */
+export interface ResponseJson {
+  /* 状态码 */
+  code: number;
+  /* 数据 */
+  data: Record<string, unknown> | null;
+  /* 提示*/
+  message: string;
 }
