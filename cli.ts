@@ -13,30 +13,33 @@ await Deno.mkdir(projectName);
 if (vsCode === true) {
   const vaCodeDir = `./${projectName}/.vscode`;
   await Deno.mkdir(vaCodeDir);
-  const extensionsJson = `{
-    "recommendations": [
-      "denoland.vscode-deno",
-      "sastan.twind-intellisense",
-    ],
-  }`;
+  const extensionsJson = `
+{
+  "recommendations": [
+    "denoland.vscode-deno",
+    "sastan.twind-intellisense",
+  ],
+}`;
   await Deno.writeTextFile(
     `${vaCodeDir}/extensions.json`,
     extensionsJson,
   );
-  const settingsJson = `{
-    "deno.enable": true,
-    "deno.lint": true,
-    "editor.defaultFormatter": "denoland.vscode-deno"
-  }`;
+  const settingsJson = `
+{
+  "deno.enable": true,
+  "deno.lint": true,
+  "editor.defaultFormatter": "denoland.vscode-deno"
+}`;
   await Deno.writeTextFile(
     `${vaCodeDir}/settings.json`,
     settingsJson,
   );
 }
 /* 生成配置deno.json、import_map.json文件 */
-const denoJson = `{
+const denoJson = `
+{
   "tasks": {
-      "dev": "deno run -A --watch --check main.ts --env=dev",
+      "dev": "deno run -A --watch=./routers --check main.ts --env=dev",
       "test": "deno compile -A --import-map=import_map.json main.ts --env=test",
       "release": "deno compile -A --import-map=import_map.json main.ts --env=release"
   },
@@ -46,7 +49,8 @@ await Deno.writeTextFile(
   `${projectName}/deno.json`,
   denoJson,
 );
-const importMapJson = `{
+const importMapJson = `
+{
   "imports": {
       "$/":"./"
   }
@@ -57,3 +61,27 @@ await Deno.writeTextFile(
 );
 /* 创建路由目录 */
 await Deno.mkdir(`./${projectName}/routers`);
+/* 创建静态目录 */
+await Deno.mkdir(`./${projectName}/statics`);
+/* 创建main主入口文件 */ 
+const main = `
+import { run } from "$api/server.ts";
+import { routerConfig } from "./router.config.ts";
+
+await run(routerConfig);
+`;
+await Deno.writeTextFile(
+  `${projectName}/main.ts`,
+  main,
+);
+/* 创建dev开发入口文件 */ 
+const dev = `
+import { dev } from "$api/dev.ts";
+
+await dev(import.meta.resolve("./main.ts"))
+`;
+await Deno.writeTextFile(
+  `${projectName}/dev.ts`,
+  dev,
+);
+

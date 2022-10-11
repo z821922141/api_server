@@ -1,4 +1,5 @@
 import { ConnInfo, ServeInit } from "./import.ts";
+import { Context } from "./context.ts";
 /**
  * 启动参数
  */
@@ -6,18 +7,56 @@ export type RunOptions = ServeInit & {
   /* 静态目录 */
   staticDir?: string;
   /* 路由前缀路径 */
-  routePrefix?: string;
+  routePrefixPath?: string;
 };
-/**
- * 请求连接上下文
- */
-export type Context = ConnInfo & {
-  
-};
+
 /**
  * 路由配置
  */
 export interface RouterConfig {
   /* 路由 */
-  router: Record<string, string>;
+  routers: Record<string, Handler>;
+}
+
+/**
+ *  请求处理
+ */
+export interface Handler {
+  /* GET请求 */
+  GET?: (ctx: Context) => Response
+  /* POST请求 */
+  POST?: (ctx: Context) => Response
+  /* PUT请求 */
+  PUT?: (ctx: Context) => Response
+  /* DELETE请求 */
+  DELETE?: (ctx: Context) => Response
+  /* HEAD请求 */
+  HEAD?: (ctx: Context) => Response
+  /* PATCH请求 */
+  PATCH?: (ctx: Context) => Response
+  /* OPTIONS请求 */
+  OPTIONS?: (ctx: Context) => Response
+  /* MIDDLEWARE中间件 */
+  MIDDLEWARE?: Array<(ctx: Context) => Response>
+}
+/**
+ * 请求方式 
+ */
+export enum RequestMethod {
+  /* GET请求 */
+  GET = "GET",
+  /* POST请求 */
+  POST = "POST",
+  /* PUT请求 */
+  PUT = "PUT",
+  /* DELETE请求 */
+  DELETE = "DELETE",
+  /* HEAD请求 */
+  HEAD = "HEAD",
+  /* PATCH请求 */
+  PATCH = "PATCH",
+  /* OPTIONS请求 */
+  OPTIONS = "OPTIONS",
+  /* MIDDLEWARE中间件 */
+  MIDDLEWARE = "MIDDLEWARE",
 }

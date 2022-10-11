@@ -1,6 +1,6 @@
-import { Context } from "$api/context.ts";
+import { Context } from "./context.ts";
 export function GET(ctx: Context): Response{
-    console.log(ctx)
+    
     return new Response("GET")
 }
 export function POST(ctx: Context): Response{
