@@ -63,18 +63,25 @@ await Deno.writeTextFile(
 await Deno.mkdir(`./${projectName}/routers`);
 /* 创建静态目录 */
 await Deno.mkdir(`./${projectName}/statics`);
-/* 创建main主入口文件 */ 
+/* 创建main主入口文件 */
 const main = `
 import { run } from "$api/server.ts";
 import { routerConfig } from "./router.config.ts";
 
-await run(routerConfig);
+/**
+ * 初始函数
+ */
+async function init() {
+
+}
+
+await run(routerConfig, init);
 `;
 await Deno.writeTextFile(
   `${projectName}/main.ts`,
   main,
 );
-/* 创建dev开发入口文件 */ 
+/* 创建dev开发入口文件 */
 const dev = `
 import { dev } from "$api/dev.ts";
 
@@ -84,4 +91,3 @@ await Deno.writeTextFile(
   `${projectName}/dev.ts`,
   dev,
 );
-

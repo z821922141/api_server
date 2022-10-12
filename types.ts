@@ -1,6 +1,15 @@
 import { ServeInit } from "./import.ts";
 import { Context } from "./context.ts";
-import { LoggerBaseInfo } from "./logger.ts";
+
+/**
+ * 全局变量
+ */
+export interface Global {
+  /* 服务运行参数 */
+  args: Record<string, unknown>;
+  /* 启动参数 */
+  runOption: RunOptions;
+}
 /**
  * 启动参数
  */
@@ -10,7 +19,7 @@ export type RunOptions = ServeInit & {
   /* 路由前缀路径 */
   routePrefixPath?: string;
   /* 日志配置 */
-  logger?: LoggerBaseInfo
+  logger?: LoggerBaseInfo;
 };
 
 /**
@@ -85,4 +94,35 @@ export enum Env {
   TEST = "test",
   /* 正式发布 */
   RELEASE = "release",
+}
+/**
+ * 日志等级
+ */
+export enum LogLevel {
+  /* 正常信息 */
+  INFO = "info",
+  /* 错误 */
+  ERROR = "error",
+}
+/**
+ *  日志收集器基础信息
+ */
+export interface LoggerBaseInfo {
+  /* 是否启动 默认：true */
+  readonly run?: boolean;
+  /* 目录 */
+  readonly dir?: string;
+  /* 单个日志文件最大大小 默认：10MB 1024*1024*10 */
+  readonly fileSize?: number;
+  /* 正常信息日志code列表  默认：[200] */
+  readonly infoCodeList?: Array<number>;
+}
+/**
+ * 日志方法
+ */
+export interface Log {
+  /* 正常信息 */
+  info: (text: string) => void;
+  /* 错误信息 */
+  error: (text: string) => void;
 }

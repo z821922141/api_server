@@ -1,5 +1,10 @@
-import { run, GLOBAL } from "$api/server.ts";
+import { run } from "$api/server.ts";
 import { routerConfig } from "./router.config.ts";
+/**
+ * 初始函数
+ */
+async function init() {
 
-await run(routerConfig);
+}
 
+await run(routerConfig, init,);

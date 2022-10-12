@@ -1,4 +1,4 @@
-import { ConnInfo } from "./import.ts";
+import { ConnInfo, dateFormat } from "./import.ts";
 import {
   Handler,
   RequestMethod,
@@ -8,10 +8,10 @@ import {
 } from "./types.ts";
 import {
   response,
-  responseSuccess,
   responseFail,
-  responseNoFound
-} from "./response.ts"
+  responseNoFound,
+  responseSuccess,
+} from "./response.ts";
 /* 路由配置 */
 const ROUTERS: Record<
   RequestMethod,
@@ -29,7 +29,7 @@ const ROUTERS: Record<
 /* 中间件配置 */
 const MIDDLEWARE: Record<string, Array<(ctx: Context) => Response>> = {};
 /* 服务启动参数 */
-let OPTIONS: RunOptions = {};
+let OPTIONS: RunOptions;
 /**
  *  请求上下文
  */
@@ -38,6 +38,8 @@ export class Context {
   readonly request: Request;
   /* 请求的连接信息 */
   readonly connInfo: ConnInfo;
+  /* 请求时间 */
+  readonly requestTime: string;
   /* 数据 */
   private state: Record<string, unknown> = {};
   /* 请求处理函数组 */
@@ -58,6 +60,7 @@ export class Context {
     this.connInfo = connInfo;
     this.handler = handler;
     this.handlerIndex = handlerIndex;
+    this.requestTime = dateFormat(new Date(), "yyyy-MM-dd hh:mm:ss.SSS");
   }
   /**
    * 请求处理函数
@@ -91,8 +94,8 @@ export class Context {
    * 返回 unknown - 对应key的值
    */
   getState<T>(key: string): T {
-    const value = this.state[key]
-    return (value as T)
+    const value = this.state[key];
+    return (value as T);
   }
   /**
    * 设置 State数据
@@ -100,7 +103,7 @@ export class Context {
    * 参数 value - 设置的值
    */
   setState<T>(key: string, value: T) {
-    this.state[key] = value
+    this.state[key] = value;
   }
   /**
    * 响应
@@ -109,7 +112,7 @@ export class Context {
    * 返回 Response
    */
   response(data: ResponseJson, init?: ResponseInit): Response {
-    return response(data, init)
+    return response(data, init);
   }
   /**
    * 响应成功
@@ -123,7 +126,7 @@ export class Context {
     message?: string,
     init?: ResponseInit,
   ): Response {
-    return responseSuccess(data, message, init)
+    return responseSuccess(data, message, init);
   }
   /**
    * 响应失败
@@ -137,7 +140,7 @@ export class Context {
     message?: string,
     init?: ResponseInit,
   ): Response {
-    return responseFail(data, message, init)
+    return responseFail(data, message, init);
   }
   /**
    * 响应资源未找到
@@ -151,7 +154,7 @@ export class Context {
     message?: string,
     init?: ResponseInit,
   ): Response {
-    return responseNoFound(data, message, init)
+    return responseNoFound(data, message, init);
   }
   /**
    * 路由初始化
