@@ -6,6 +6,12 @@ import {
   RouterConfig,
   RunOptions,
 } from "./types.ts";
+import {
+  response,
+  responseSuccess,
+  responseFail,
+  responseNoFound
+} from "./response.ts"
 /* 路由配置 */
 const ROUTERS: Record<
   RequestMethod,
@@ -32,6 +38,8 @@ export class Context {
   readonly request: Request;
   /* 请求的连接信息 */
   readonly connInfo: ConnInfo;
+  /* 数据 */
+  private state: Record<string, unknown> = {};
   /* 请求处理函数组 */
   private handler: Array<(ctx: Context) => Response>;
   /* 当前请求的处理函数下标 */
@@ -61,21 +69,38 @@ export class Context {
     const route = new URL(request.url).pathname;
     const methodInfo = ROUTERS[method];
     if (methodInfo === undefined) {
-      return Context.responseNoFound({ method, route });
+      return responseNoFound({ method, route });
     }
     const handlerList = methodInfo[route];
     if (handlerList === undefined) {
-      return Context.responseNoFound({ method, route });
+      return responseNoFound({ method, route });
     }
     const cxt = new Context(request, connInfo, handlerList, 0);
     return handlerList[cxt.handlerIndex](cxt);
   }
   /**
-   * 执行下一函数
+   * 执行下一请求处理函数
    */
   next() {
     this.handlerIndex++;
     return this.handler[this.handlerIndex](this);
+  }
+  /**
+   * 获取 State数据
+   * 参数 key - 获取的key
+   * 返回 unknown - 对应key的值
+   */
+  getState<T>(key: string): T {
+    const value = this.state[key]
+    return (value as T)
+  }
+  /**
+   * 设置 State数据
+   * 参数 key -设置的key
+   * 参数 value - 设置的值
+   */
+  setState<T>(key: string, value: T) {
+    this.state[key] = value
   }
   /**
    * 响应
@@ -83,17 +108,8 @@ export class Context {
    * 参数 init - 响应参数
    * 返回 Response
    */
-  static response(data: ResponseJson, init?: ResponseInit): Response {
-    data.code ??= 200;
-    data.data ??= null;
-    data.message ??= "";
-    return new Response(JSON.stringify(data), {
-      status: init?.status ?? 200,
-      headers: init?.headers ?? {
-        "content-type": "application/json;charset=UTF-8",
-      },
-      statusText: init?.statusText ?? "",
-    });
+  response(data: ResponseJson, init?: ResponseInit): Response {
+    return response(data, init)
   }
   /**
    * 响应成功
@@ -102,17 +118,12 @@ export class Context {
    * 参数 init - 响应参数
    * 返回 Response
    */
-  static responseSuccess(
+  responseSuccess(
     data?: Record<string, unknown> | null,
     message?: string,
     init?: ResponseInit,
   ): Response {
-    const json = {
-      code: 200,
-      data: data ??= null,
-      message: message ??= "成功",
-    };
-    return this.response(json, init);
+    return responseSuccess(data, message, init)
   }
   /**
    * 响应失败
@@ -121,17 +132,12 @@ export class Context {
    * 参数 init - 响应参数
    * 返回 Response
    */
-  static responseFail(
+  responseFail(
     data?: Record<string, unknown> | null,
     message?: string,
     init?: ResponseInit,
   ): Response {
-    const json = {
-      code: 500,
-      data: data ??= null,
-      message: message ??= "失败",
-    };
-    return this.response(json, init);
+    return responseFail(data, message, init)
   }
   /**
    * 响应资源未找到
@@ -140,17 +146,12 @@ export class Context {
    * 参数 init - 响应参数
    * 返回 Response
    */
-  static responseNoFound(
+  responseNoFound(
     data?: Record<string, unknown> | null,
     message?: string,
     init?: ResponseInit,
   ): Response {
-    const json = {
-      code: 404,
-      data: data ??= null,
-      message: message ??= "资源未找到",
-    };
-    return this.response(json, init);
+    return responseNoFound(data, message, init)
   }
   /**
    * 路由初始化

@@ -1,5 +1,6 @@
-import { ConnInfo, ServeInit } from "./import.ts";
+import { ServeInit } from "./import.ts";
 import { Context } from "./context.ts";
+import { LoggerBaseInfo } from "./logger.ts";
 /**
  * 启动参数
  */
@@ -8,6 +9,8 @@ export type RunOptions = ServeInit & {
   staticDir?: string;
   /* 路由前缀路径 */
   routePrefixPath?: string;
+  /* 日志配置 */
+  logger?: LoggerBaseInfo
 };
 
 /**
@@ -71,4 +74,15 @@ export interface ResponseJson {
   data: Record<string, unknown> | null;
   /* 提示*/
   message: string;
+}
+/**
+ * 当前环境
+ */
+export enum Env {
+  /* 开发 */
+  DEV = "dev",
+  /* 测试 */
+  TEST = "test",
+  /* 正式发布 */
+  RELEASE = "release",
 }

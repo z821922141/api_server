@@ -1,8 +1,3 @@
-import { Context } from "./context.ts";
-export function GET(ctx: Context): Response{
-    
-    return new Response("GET")
-}
-export function POST(ctx: Context): Response{
-    return new Response("POST")
-}
+new Worker(new URL("./worker.ts", import.meta.url).href, { type: "module" });
+console.log(new URL("./worker.ts", import.meta.url).href)
+console.log(1)
