@@ -52,7 +52,8 @@ await Deno.writeTextFile(
 const importMapJson = `
 {
   "imports": {
-      "$/":"./"
+      "$/":"./",
+      "$api/":"../src/"
   }
 }`;
 await Deno.writeTextFile(
@@ -61,6 +62,36 @@ await Deno.writeTextFile(
 );
 /* 创建路由目录 */
 await Deno.mkdir(`./${projectName}/routers`);
+/* 创建api.ts示例文件 */
+const api = `
+import { Context } from "$api/context.ts";
+
+export function GET(ctx:Context){
+    return ctx.responseSuccess()
+}
+`
+await Deno.writeTextFile(
+  `./${projectName}/routers/api.ts`,
+  api,
+);
+/* 创建路由配置文件 */
+const routerConfig = `
+/* 路由配置文件，请勿改动！！！ */ 
+
+import * as $0 from "./routers/api.ts";
+
+export const routerConfig = {
+  routers: {
+    "./routers/api.ts": $0,
+    
+  },
+};
+`
+await Deno.writeTextFile(
+  `./${projectName}/router.config.ts`,
+  routerConfig,
+);
+
 /* 创建静态目录 */
 await Deno.mkdir(`./${projectName}/statics`);
 /* 创建main主入口文件 */

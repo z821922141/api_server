@@ -78,7 +78,7 @@ export class Logger {
   async write(path: string, options?: Deno.WriteFileOptions) {
     await Deno.writeTextFile(
       path,
-      this.text,
+      `${this.text},\n`,
       options,
     );
     LOG_QUEUE.shift();
@@ -96,8 +96,7 @@ export class Logger {
     return {
       run: info?.run ?? true,
       dir: info?.dir ?? undefined,
-      fileSize: info?.fileSize ?? 50,
-      infoCodeList: info?.infoCodeList ?? [200],
+      fileSize: info?.fileSize ?? 1024 * 1024 * 10,
     };
   }
 }

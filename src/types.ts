@@ -78,11 +78,15 @@ export enum RequestMethod {
  */
 export interface ResponseJson {
   /* 状态码 */
-  code: number;
+  code?: number;
   /* 数据 */
-  data: Record<string, unknown> | null;
+  data?: Record<string, unknown> | null;
   /* 提示*/
-  message: string;
+  message?: string;
+  /* 返回时间 */
+  responseTime?: string;
+  /* 日志 */
+  log?: LogWriteInfo
 }
 /**
  * 当前环境
@@ -114,8 +118,6 @@ export interface LoggerBaseInfo {
   readonly dir?: string;
   /* 单个日志文件最大大小 默认：10MB 1024*1024*10 */
   readonly fileSize?: number;
-  /* 正常信息日志code列表  默认：[200] */
-  readonly infoCodeList?: Array<number>;
 }
 /**
  * 日志方法
@@ -125,4 +127,15 @@ export interface Log {
   info: (text: string) => void;
   /* 错误信息 */
   error: (text: string) => void;
+}
+/**
+ * 日志写入的信息 
+ */
+export interface LogWriteInfo {
+  /* 写入的json */
+  json?: Record<string, unknown>
+  /* 写入的基础json */
+  baseJson?: Record<string, unknown>
+  /* 错误信息 */
+  error?: Error
 }

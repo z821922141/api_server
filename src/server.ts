@@ -1,7 +1,7 @@
 import { Global, RouterConfig, RunOptions } from "./types.ts";
 import { argsParse, bold, green, serve } from "./import.ts";
 import { Context } from "./context.ts";
-import { log, Logger } from "./logger.ts";
+import { Logger } from "./logger.ts";
 /* 全局变量 */
 let GLOBAL: Global;
 /**

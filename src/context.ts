@@ -1,10 +1,11 @@
-import { ConnInfo, dateFormat } from "./import.ts";
+import { ConnInfo, dateFormat, bold, green, yellow, serveDir } from "./import.ts";
 import {
   Handler,
   RequestMethod,
   ResponseJson,
   RouterConfig,
   RunOptions,
+  Env
 } from "./types.ts";
 import {
   response,
@@ -12,6 +13,10 @@ import {
   responseNoFound,
   responseSuccess,
 } from "./response.ts";
+import { getGlobal } from "./server.ts";
+import {
+  log
+} from "./logger.ts";
 /* 路由配置 */
 const ROUTERS: Record<
   RequestMethod,
@@ -60,7 +65,7 @@ export class Context {
     this.connInfo = connInfo;
     this.handler = handler;
     this.handlerIndex = handlerIndex;
-    this.requestTime = dateFormat(new Date(), "yyyy-MM-dd hh:mm:ss.SSS");
+    this.requestTime = dateFormat(new Date(), "yyyy-MM-dd HH:mm:ss.SSS");
   }
   /**
    * 请求处理函数
@@ -68,15 +73,26 @@ export class Context {
    * 参数 connInfo - 请求的连接信息
    */
   static handler(request: Request, connInfo: ConnInfo) {
+    const baseJson = Context.getRequestInfo(request, connInfo)
     const method = (request.method as RequestMethod);
     const route = new URL(request.url).pathname;
+    /* 过滤 favicon.ico*/
+    if (route.startsWith("/favicon.ico")) {
+      return new Response();
+    }
+    Context.log(baseJson)
+    /* 检测是否为文件路由 */
+    const staticDir = getGlobal()?.runOption?.staticDir
+    if (route.startsWith(staticDir ?? "")) {
+      return serveDir(request, { quiet: true });
+    }
     const methodInfo = ROUTERS[method];
     if (methodInfo === undefined) {
-      return responseNoFound({ method, route });
+      return responseNoFound({ data: { method, route }, log: { baseJson, error: new Error() } });
     }
     const handlerList = methodInfo[route];
     if (handlerList === undefined) {
-      return responseNoFound({ method, route });
+      return responseNoFound({ data: { method, route }, log: { baseJson, error: new Error() } });
     }
     const cxt = new Context(request, connInfo, handlerList, 0);
     return handlerList[cxt.handlerIndex](cxt);
@@ -112,49 +128,97 @@ export class Context {
    * 返回 Response
    */
   response(data: ResponseJson, init?: ResponseInit): Response {
+    if (data.log !== undefined) {
+      data.log.baseJson ??= this.getRequestInfo()
+    }
     return response(data, init);
   }
   /**
    * 响应成功
    * 参数 data - 响应的数据
-   * 参数 message - 响应的提示
    * 参数 init - 响应参数
    * 返回 Response
    */
   responseSuccess(
-    data?: Record<string, unknown> | null,
-    message?: string,
+    data?: ResponseJson,
     init?: ResponseInit,
   ): Response {
-    return responseSuccess(data, message, init);
+    if (data?.log !== undefined) {
+      data.log.baseJson ??= this.getRequestInfo()
+    }
+    return responseSuccess(data, init);
   }
   /**
    * 响应失败
    * 参数 data - 响应的数据
-   * 参数 message - 响应的提示
    * 参数 init - 响应参数
    * 返回 Response
    */
   responseFail(
-    data?: Record<string, unknown> | null,
-    message?: string,
+    data?: ResponseJson,
     init?: ResponseInit,
   ): Response {
-    return responseFail(data, message, init);
+    if (data?.log !== undefined) {
+      data.log.baseJson ??= this.getRequestInfo()
+    }
+    return responseFail(data, init);
   }
   /**
    * 响应资源未找到
    * 参数 data - 响应的数据
-   * 参数 message - 响应的提示
    * 参数 init - 响应参数
    * 返回 Response
    */
   responseNoFound(
-    data?: Record<string, unknown> | null,
-    message?: string,
+    data?: ResponseJson,
     init?: ResponseInit,
   ): Response {
-    return responseNoFound(data, message, init);
+    if (data?.log !== undefined) {
+      data.log.baseJson ??= this.getRequestInfo()
+    }
+    return responseNoFound(data, init);
+  }
+  /**
+   * 获取请求基本信息
+   * 返回 Record<string, unknown> - 获取后的信息 
+   */
+  getRequestInfo(): Record<string, unknown> {
+    return {
+      method: (this.request.method as RequestMethod),
+      route: new URL(this.request.url).pathname,
+      requestTime: this.requestTime,
+      ip: this.connInfo.remoteAddr,
+      userAgent: this.request.headers.get("User-Agent")
+    }
+  }
+  /**
+   * 静态的获取请求基本信息
+   * 参数 request - 请求资源
+   * 参数 connInfo - 请求的连接信息
+   * 返回 Record<string, unknown> - 获取后的信息 
+   */
+  static getRequestInfo(request: Request, connInfo: ConnInfo): Record<string, unknown> {
+    return {
+      method: (request.method as RequestMethod),
+      route: new URL(request.url).pathname,
+      requestTime: dateFormat(new Date(), "yyyy-MM-dd HH:mm:ss.SSS"),
+      ip: connInfo.remoteAddr,
+      userAgent: request.headers.get("User-Agent")
+    }
+  }
+  /**
+   * 日志打印 
+   * 参数 json - 打印的数据
+   * 参数 connInfo - 请求的连接信息
+   */
+  static log(json: Record<string, unknown>) {
+    setTimeout(() => {
+      if (getGlobal().args.env === Env.DEV && getGlobal()?.runOption?.logger?.run === true) {
+        const info = `{method: ${green(bold(json.method as string))}, route: ${green(bold(json.route as string))}, requestTime: ${yellow(bold(json.requestTime as string))}, ip: ${JSON.stringify(json.ip)}}`;
+        console.log(info);
+      }
+      log.info(JSON.stringify(json))
+    });
   }
   /**
    * 路由初始化
@@ -216,11 +280,11 @@ export class Context {
   ) {
     const middleware = Object.entries(MIDDLEWARE);
     const route = OPTIONS.routePrefixPath + path;
+    if (ROUTERS[method][route] === undefined) {
+      ROUTERS[method][route] = [];
+    }
     for (const [key, value] of middleware) {
       if (path.indexOf(key) === 0) {
-        if (ROUTERS[method][route] === undefined) {
-          ROUTERS[method][route] = [];
-        }
         ROUTERS[method][route] = [...ROUTERS[method][route], ...value];
       }
     }
