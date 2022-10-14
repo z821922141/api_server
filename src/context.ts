@@ -2,17 +2,14 @@ import { ConnInfo, dateFormat, bold, green, yellow, serveDir } from "./import.ts
 import {
   Handler,
   RequestMethod,
-  ResponseJson,
+  SendJson,
   RouterConfig,
   RunOptions,
   Env
 } from "./types.ts";
 import {
-  response,
-  responseFail,
-  responseNoFound,
-  responseSuccess,
-} from "./response.ts";
+  Send
+} from "./send.ts";
 import { getGlobal } from "./server.ts";
 import {
   log
@@ -88,11 +85,11 @@ export class Context {
     }
     const methodInfo = ROUTERS[method];
     if (methodInfo === undefined) {
-      return responseNoFound({ data: { method, route }, log: { baseJson, error: new Error() } });
+      return new Send(new Context(request, connInfo, [], 0)).sendNoFound({ data: { method, route }, log: { baseJson, error: new Error() } });
     }
     const handlerList = methodInfo[route];
     if (handlerList === undefined) {
-      return responseNoFound({ data: { method, route }, log: { baseJson, error: new Error() } });
+      return new Send(new Context(request, connInfo, [], 0)).sendNoFound({ data: { method, route }, log: { baseJson, error: new Error() } });
     }
     const cxt = new Context(request, connInfo, handlerList, 0);
     return handlerList[cxt.handlerIndex](cxt);
@@ -102,6 +99,9 @@ export class Context {
    */
   next() {
     this.handlerIndex++;
+    if(this.handlerIndex===this.handler.length){
+      throw Error("没有下一函数执行！！！")
+    }
     return this.handler[this.handlerIndex](this);
   }
   /**
@@ -127,11 +127,11 @@ export class Context {
    * 参数 init - 响应参数
    * 返回 Response
    */
-  response(data: ResponseJson, init?: ResponseInit): Response {
+  send(data: SendJson, init?: ResponseInit): Response {
     if (data.log !== undefined) {
       data.log.baseJson ??= this.getRequestInfo()
     }
-    return response(data, init);
+    return new Send(this, init).send(data);
   }
   /**
    * 响应成功
@@ -139,14 +139,11 @@ export class Context {
    * 参数 init - 响应参数
    * 返回 Response
    */
-  responseSuccess(
-    data?: ResponseJson,
-    init?: ResponseInit,
-  ): Response {
+  sendSuccess(data?: SendJson, init?: ResponseInit): Response {
     if (data?.log !== undefined) {
       data.log.baseJson ??= this.getRequestInfo()
     }
-    return responseSuccess(data, init);
+    return new Send(this, init).sendSuccess(data);
   }
   /**
    * 响应失败
@@ -154,14 +151,11 @@ export class Context {
    * 参数 init - 响应参数
    * 返回 Response
    */
-  responseFail(
-    data?: ResponseJson,
-    init?: ResponseInit,
-  ): Response {
+  sendFail(data?: SendJson, init?: ResponseInit): Response {
     if (data?.log !== undefined) {
       data.log.baseJson ??= this.getRequestInfo()
     }
-    return responseFail(data, init);
+    return new Send(this, init).sendFail(data);
   }
   /**
    * 响应资源未找到
@@ -169,14 +163,11 @@ export class Context {
    * 参数 init - 响应参数
    * 返回 Response
    */
-  responseNoFound(
-    data?: ResponseJson,
-    init?: ResponseInit,
-  ): Response {
+  sendNoFound(data?: SendJson, init?: ResponseInit): Response {
     if (data?.log !== undefined) {
       data.log.baseJson ??= this.getRequestInfo()
     }
-    return responseNoFound(data, init);
+    return new Send(this, init).sendNoFound(data);
   }
   /**
    * 获取请求基本信息
@@ -188,7 +179,7 @@ export class Context {
       route: new URL(this.request.url).pathname,
       requestTime: this.requestTime,
       ip: this.connInfo.remoteAddr,
-      userAgent: this.request.headers.get("User-Agent")
+      userAgent: this.request.headers.get("user-agent")
     }
   }
   /**
@@ -203,7 +194,7 @@ export class Context {
       route: new URL(request.url).pathname,
       requestTime: dateFormat(new Date(), "yyyy-MM-dd HH:mm:ss.SSS"),
       ip: connInfo.remoteAddr,
-      userAgent: request.headers.get("User-Agent")
+      userAgent: request.headers.get("user-agent")
     }
   }
   /**

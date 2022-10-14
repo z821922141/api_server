@@ -13,6 +13,7 @@ export function getGlobal() {
 /**
  * 启动服务
  * 参数 routerConfig - 路由配置
+ * 参数 fn - 初始函数
  * 参数 options - 服务启动参数
  */
 export async function run(

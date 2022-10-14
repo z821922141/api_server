@@ -76,7 +76,7 @@ export enum RequestMethod {
 /**
  * 相应json
  */
-export interface ResponseJson {
+export interface SendJson {
   /* 状态码 */
   code?: number;
   /* 数据 */
@@ -84,7 +84,7 @@ export interface ResponseJson {
   /* 提示*/
   message?: string;
   /* 返回时间 */
-  responseTime?: string;
+  time?: string;
   /* 日志 */
   log?: LogWriteInfo
 }

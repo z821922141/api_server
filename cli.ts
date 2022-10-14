@@ -39,7 +39,7 @@ if (vsCode === true) {
 const denoJson = `
 {
   "tasks": {
-      "dev": "deno run -A --watch=./routers --check main.ts --env=dev",
+      "dev": "deno run -A --watch=./routers --check dev.ts --env=dev",
       "test": "deno compile -A --import-map=import_map.json main.ts --env=test",
       "release": "deno compile -A --import-map=import_map.json main.ts --env=release"
   },
@@ -67,30 +67,30 @@ const api = `
 import { Context } from "$api/context.ts";
 
 export function GET(ctx:Context){
-    return ctx.responseSuccess()
+    return ctx.sendSuccess()
 }
 `
 await Deno.writeTextFile(
   `./${projectName}/routers/api.ts`,
   api,
 );
-/* 创建路由配置文件 */
-const routerConfig = `
-/* 路由配置文件，请勿改动！！！ */ 
+// /* 创建路由配置文件 */
+// const routerConfig = `
+// /* 路由配置文件，请勿改动！！！ */ 
 
-import * as $0 from "./routers/api.ts";
+// import * as $0 from "./routers/api.ts";
 
-export const routerConfig = {
-  routers: {
-    "./routers/api.ts": $0,
+// export const routerConfig = {
+//   routers: {
+//     "./routers/api.ts": $0,
     
-  },
-};
-`
-await Deno.writeTextFile(
-  `./${projectName}/router.config.ts`,
-  routerConfig,
-);
+//   },
+// };
+// `
+// await Deno.writeTextFile(
+//   `./${projectName}/router.config.ts`,
+//   routerConfig,
+// );
 
 /* 创建静态目录 */
 await Deno.mkdir(`./${projectName}/statics`);
@@ -122,3 +122,5 @@ await Deno.writeTextFile(
   `${projectName}/dev.ts`,
   dev,
 );
+
+console.log(`\n${projectName}项目创建成功`)
