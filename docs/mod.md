@@ -99,7 +99,7 @@ await run(routerConfig, init,{port:8080});
 
 ### 2.2 路由
 
-路由都需要创建再routers目录下面，路由路径为子目录路径+文件名
+路由都需要创建在routers目录下面，路由路径为子目录路径+文件名
 
 示例
 
@@ -127,11 +127,11 @@ export function GET(ctx:Context){
 访问 如：http://localhost:10000/api 可获取到返回信息
 
 支持创建 `GET`、`POST`、`PUT`、`DELETE`、`HEAD`、`PATCH`、`OPTIONS`
-，函数名就是请求方式，需要为大写，切export导出该函数，每个路由都支持写多个请求方式
+，函数名就是请求方式，需要为大写，且export导出该函数，每个路由都支持写多个请求方式
 
 ### 2.2 中间件
 
-中间件都需要创建再routers目录下面，固定文件名`_middleware.ts`，每个子目录下路由都会优先执行当前目录下的中间件
+中间件都需要创建在routers目录下面，固定文件名`_middleware.ts`，每个子目录下路由都会优先执行当前目录下的中间件
 
 示例
 
@@ -172,7 +172,7 @@ export const MIDDLEWARE = [minddleware1, minddleware2]
 
 中间件文件需要导出一个名为`MIDDLEWARE` 类型数组的常量或变量
 
-## 3 RunOptions 启动参数详解
+## 3 RunOptions 启动参数
 
 ```
 {
@@ -199,7 +199,7 @@ export const MIDDLEWARE = [minddleware1, minddleware2]
 
 `logger` [LoggerBaseInfo](../src/types.ts) 日志基础配置
 
-### 3.1 LoggerBaseInfo 日志基础配置详解
+### 3.1 LoggerBaseInfo 日志基础配置
 
 ```
 {
@@ -231,11 +231,58 @@ export const MIDDLEWARE = [minddleware1, minddleware2]
 
 `next` 中间件需要执行该函数才可以执行后面的其他中间件或路由函数
 
+```
+function minddleware1(ctx: Context) {
+    const test = {
+        str: "测试"
+    }
+    ctx.setState<Test>("test", test)
+    return ctx.next()
+}
+```
+
 `setState` 设置state的泛型方法，setState<T>(key, value)
+
+```
+interface Test {
+    str: string
+}
+function minddleware1(ctx: Context) {
+    const test = {
+        str: "测试"
+    }
+    ctx.setState<Test>("test", test)
+    return ctx.next()
+}
+```
 
 `getState` 获取state的泛型方法，getState<T>(key)
 
-`send` `sendSuccess` `sendFail` `sendNoFound` 响应数据函数，使用这些函数且设置了日志目录，会写入响应日志到日志目录内
+```
+function minddleware2(ctx: Context) {
+    console.log(ctx.getState<Test>("test"))
+    return ctx.next()
+}
+```
+
+`send` `sendSuccess` `sendFail` `sendNoFound`
+
+响应数据函数，使用这些函数且设置了日志目录，会写入响应日志到日志目录内
+
+响应数据参数
+[SendJson](../src/types.ts)、[ResponseInit](https://denoland-cn.deno.dev/api@v1.26.1?s=ResponseInit),
+
+```
+export function GET(ctx:Context){
+    console.log(ctx.request)
+    return ctx.sendSuccess({ data: { method:"GET", route:"/api" }, log: { json:{"message":"请求成功"}} })
+}
+
+export function POST(ctx:Context){
+    console.log(ctx.request)
+    return ctx.sendFail({ data: { method:"GET", route:"/api" }, log: { json:{"message":"请求失败"}, error: new Error()} })
+}
+```
 
 ## 5 getGlobal 获取内置的全局常量，不可修改
 
