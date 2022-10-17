@@ -27,7 +27,7 @@ export type RunOptions = ServeInit & {
  */
 export interface RouterConfig {
   /* 路由 */
-  routers: Record<string, Handler>;
+  routers: Record<string, unknown>;
 }
 
 /**

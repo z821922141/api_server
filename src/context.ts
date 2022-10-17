@@ -236,6 +236,7 @@ export class Context {
       }
       const handler = (value as Handler);
       if (handler.GET !== undefined) {
+        console.log(handler.GET)
         this.routerSet(nowKey, handler.GET, RequestMethod.GET);
       }
       if (handler.POST !== undefined) {
