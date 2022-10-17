@@ -37,7 +37,7 @@ deno的一个轻量专注于写api的web服务库
 使用CLI创建项目
 
 ```
-deno run -A url
+deno run -A https://gitee.com/ting-she/api_server/blob/master/cli.ts
 ```
 
 使用配置命令启动项目
