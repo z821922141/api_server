@@ -53,7 +53,7 @@ const importMapJson = `
 {
   "imports": {
       "$/":"./",
-      "$api/":"../src/"
+      "$api/":"https://gitee.com/ting-she/api_server/tree/master/src/"
   }
 }`;
 await Deno.writeTextFile(
