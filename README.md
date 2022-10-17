@@ -37,7 +37,7 @@ deno的一个轻量专注于写api的web服务库
 使用CLI创建项目
 
 ```
-deno run -A https://deno.land/x/api_server/cli.ts
+deno run -A https://deno.land/x/api_server@0.0.1/cli.ts
 ```
 
 使用配置命令启动项目
