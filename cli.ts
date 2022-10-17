@@ -53,7 +53,8 @@ const importMapJson = `
 {
   "imports": {
       "$/":"./",
-      "$api/":"https://deno.land/x/api_server/src/"
+      "./":"./",
+      "$api/":"https://deno.land/x/api_server@0.0.1/src/"
   }
 }`;
 await Deno.writeTextFile(
